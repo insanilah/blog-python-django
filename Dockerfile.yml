@@ -1,0 +1,28 @@
+# Gunakan base image resmi Python
+FROM python:3.10-slim
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1  # Menghindari penulisan file .pyc
+ENV PYTHONUNBUFFERED 1        # Memastikan output log langsung terlihat
+
+# Set direktori kerja di container
+WORKDIR /app
+
+# Salin file requirements.txt ke dalam container
+COPY requirements.txt /app/
+
+# Install dependencies menggunakan pip
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Salin seluruh kode aplikasi ke dalam container
+COPY . /app/
+
+# Expose port yang digunakan Django (default: 8000)
+EXPOSE 8000
+
+# Perintah default untuk menjalankan aplikasi
+# CMD ["gunicorn", "--bind", "0.0.0.0:8000", "blog.wsgi:application"]
+
+# Default ke Gunicorn untuk produksi
+CMD ["sh", "-c", "if [ $DEBUG = 'True' ]; then python manage.py runserver 0.0.0.0:8000; else gunicorn --bind 0.0.0.0:8000 blog.wsgi:application --workers=3; fi"]
+
